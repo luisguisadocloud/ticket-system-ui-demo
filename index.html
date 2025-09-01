@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ticket System - Demo Frontend</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="styles.css" rel="stylesheet">
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="bi bi-ticket-perforated me-2"></i>
+                Ticket System Demo
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#" onclick="showTicketsList()">
+                            <i class="bi bi-list-ul me-1"></i>Tickets
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" onclick="showCreateTicket()">
+                            <i class="bi bi-plus-circle me-1"></i>Nuevo Ticket
+                        </a>
+                    </li>
+                </ul>
+                <div class="navbar-nav">
+                    <div class="nav-item">
+                        <button class="btn btn-outline-light btn-sm" type="button" onclick="showSecuritySettings()">
+                            <i class="bi bi-shield-lock me-1"></i>Configuración de Seguridad
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+
+    <div class="container-fluid mt-4">
+
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="bi bi-gear me-2"></i>Configuración de API
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label for="apiBaseUrl" class="form-label">URL Base de la API</label>
+                                <input type="url" class="form-control" id="apiBaseUrl" 
+                                       value="https://your-api-gateway-url.amazonaws.com/prod" 
+                                       placeholder="https://your-api-gateway-url.amazonaws.com/prod">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="apiVersion" class="form-label">Versión de API</label>
+                                <input type="text" class="form-control" id="apiVersion" value="v1" readonly>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <button class="btn btn-primary" onclick="testConnection()">
+                                <i class="bi bi-wifi me-1"></i>Probar Conexión
+                            </button>
+                            <span id="connectionStatus" class="ms-3"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="bi bi-shield-lock me-2"></i>Parámetros de Seguridad
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label for="jwtToken" class="form-label">Bearer Token (JWT)</label>
+                                <div class="input-group">
+                                    <input type="password" class="form-control" id="jwtToken" 
+                                           placeholder="Ingresa tu JWT token">
+                                    <button class="btn btn-outline-primary" type="button" onclick="setAuthToken()">
+                                        <i class="bi bi-key me-1"></i>Configurar
+                                    </button>
+                                </div>
+                                <div class="form-text">Token de autenticación Bearer para la API</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="apiKey" class="form-label">API Key</label>
+                                <div class="input-group">
+                                    <input type="password" class="form-control" id="apiKey" 
+                                           placeholder="Ingresa tu API key">
+                                    <button class="btn btn-outline-primary" type="button" onclick="setApiKey()">
+                                        <i class="bi bi-key me-1"></i>Configurar
+                                    </button>
+                                </div>
+                                <div class="form-text">Clave de API que se enviará en el header x-api-key</div>
+                            </div>
+                        </div>
+                        <hr class="my-4">
+                        <h6 class="mb-3"><i class="bi bi-person-lock me-2"></i>Inicio de sesión con Amazon Cognito</h6>
+                        <div class="row g-3 align-items-end">
+                            <div class="col-md-3">
+                                <label for="cognitoRegion" class="form-label">Región</label>
+                                <input type="text" class="form-control" id="cognitoRegion" placeholder="us-east-2" value="us-east-2">
+                            </div>
+                            <div class="col-md-3">
+                                <label for="cognitoClientId" class="form-label">Client ID</label>
+                                <input type="text" class="form-control" id="cognitoClientId" placeholder="xxxxxxxxxxxxxxxxxxxxxxxxxx">
+                            </div>
+                            <div class="col-md-3">
+                                <label for="cognitoUsername" class="form-label">Usuario</label>
+                                <input type="text" class="form-control" id="cognitoUsername" placeholder="nombre.de.usuario">
+                            </div>
+                            <div class="col-md-3">
+                                <label for="cognitoPassword" class="form-label">Contraseña</label>
+                                <div class="input-group">
+                                    <input type="password" class="form-control" id="cognitoPassword" placeholder="••••••••">
+                                    <button class="btn btn-success" type="button" id="cognitoLoginBtn" onclick="loginWithCognito()">
+                                        <i class="bi bi-box-arrow-in-right me-1"></i>Iniciar sesión
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <small id="cognitoLoginStatus" class="text-muted"></small>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <div class="alert alert-info" role="alert">
+                                <i class="bi bi-info-circle me-2"></i>
+                                <strong>Nota:</strong> Los parámetros de seguridad se guardan localmente en tu navegador y se incluyen automáticamente en todas las solicitudes a la API.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <div id="mainContent">
+
+            <div id="ticketsListView" class="view">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h5 class="card-title mb-0">
+                                    <i class="bi bi-list-ul me-2"></i>Lista de Tickets
+                                </h5>
+                                <div>
+                                    <button class="btn btn-outline-primary btn-sm me-2" onclick="refreshTickets()">
+                                        <i class="bi bi-arrow-clockwise me-1"></i>Actualizar
+                                    </button>
+                                    <button class="btn btn-primary btn-sm" onclick="showCreateTicket()">
+                                        <i class="bi bi-plus-circle me-1"></i>Nuevo Ticket
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div id="ticketsLoading" class="text-center py-4">
+                                    <div class="spinner-border text-primary" role="status">
+                                        <span class="visually-hidden">Cargando...</span>
+                                    </div>
+                                    <p class="mt-2">Cargando tickets...</p>
+                                </div>
+                                <div id="ticketsList" class="row">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+            <div id="createTicketView" class="view" style="display: none;">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">
+                                    <i class="bi bi-plus-circle me-2"></i>Crear Nuevo Ticket
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <form id="createTicketForm">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="ticketTitle" class="form-label">Título *</label>
+                                                <input type="text" class="form-control" id="ticketTitle" 
+                                                       maxlength="50" required>
+                                                <div class="form-text">Máximo 50 caracteres</div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="ticketReporterId" class="form-label">ID del Reportero *</label>
+                                                <input type="text" class="form-control" id="ticketReporterId" 
+                                                       placeholder="550e8400-e29b-41d4-a716-446655440000" required>
+                                                <div class="form-text">UUID del usuario que reporta el ticket</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="ticketDescription" class="form-label">Descripción *</label>
+                                        <textarea class="form-control" id="ticketDescription" rows="4" 
+                                                  maxlength="250" required></textarea>
+                                        <div class="form-text">Máximo 250 caracteres</div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <div class="mb-3">
+                                                <label for="ticketStatus" class="form-label">Estado</label>
+                                                <select class="form-select" id="ticketStatus">
+                                                    <option value="NEW">Nuevo</option>
+                                                    <option value="OPEN" selected>Abierto</option>
+                                                    <option value="IN_PROGRESS">En Progreso</option>
+                                                    <option value="RESOLVED">Resuelto</option>
+                                                    <option value="CLOSED">Cerrado</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="mb-3">
+                                                <label for="ticketPriority" class="form-label">Prioridad</label>
+                                                <select class="form-select" id="ticketPriority">
+                                                    <option value="LOW">Baja</option>
+                                                    <option value="MEDIUM" selected>Media</option>
+                                                    <option value="HIGH">Alta</option>
+                                                    <option value="CRITICAL">Crítica</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="mb-3">
+                                                <label for="ticketType" class="form-label">Tipo</label>
+                                                <select class="form-select" id="ticketType">
+                                                    <option value="INCIDENT" selected>Incidente</option>
+                                                    <option value="SERVICE_REQUEST">Solicitud de Servicio</option>
+                                                    <option value="QUESTION">Pregunta</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="ticketAssignedToId" class="form-label">Asignado a (ID)</label>
+                                        <input type="text" class="form-control" id="ticketAssignedToId" 
+                                               placeholder="550e8400-e29b-41d4-a716-446655440001">
+                                        <div class="form-text">UUID del usuario asignado (opcional)</div>
+                                    </div>
+                                    <div class="d-flex gap-2">
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="bi bi-check-circle me-1"></i>Crear Ticket
+                                        </button>
+                                        <button type="button" class="btn btn-secondary" onclick="showTicketsList()">
+                                            <i class="bi bi-arrow-left me-1"></i>Cancelar
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+            <div id="ticketDetailsView" class="view" style="display: none;">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h5 class="card-title mb-0">
+                                    <i class="bi bi-ticket-perforated me-2"></i>Detalles del Ticket
+                                </h5>
+                                <div>
+                                    <button class="btn btn-outline-primary btn-sm me-2" onclick="editTicket()">
+                                        <i class="bi bi-pencil me-1"></i>Editar
+                                    </button>
+                                    <button class="btn btn-outline-danger btn-sm me-2" onclick="deleteTicket()">
+                                        <i class="bi bi-trash me-1"></i>Eliminar
+                                    </button>
+                                    <button class="btn btn-secondary btn-sm" onclick="showTicketsList()">
+                                        <i class="bi bi-arrow-left me-1"></i>Volver
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div id="ticketDetailsLoading" class="text-center py-4">
+                                    <div class="spinner-border text-primary" role="status">
+                                        <span class="visually-hidden">Cargando...</span>
+                                    </div>
+                                    <p class="mt-2">Cargando detalles del ticket...</p>
+                                </div>
+                                <div id="ticketDetailsContent" style="display: none;">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+            <div id="editTicketView" class="view" style="display: none;">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">
+                                    <i class="bi bi-pencil me-2"></i>Editar Ticket
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <form id="editTicketForm">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="editTicketTitle" class="form-label">Título *</label>
+                                                <input type="text" class="form-control" id="editTicketTitle" 
+                                                       maxlength="50" required>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="editTicketReporterId" class="form-label">ID del Reportero *</label>
+                                                <input type="text" class="form-control" id="editTicketReporterId" required>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="editTicketDescription" class="form-label">Descripción *</label>
+                                        <textarea class="form-control" id="editTicketDescription" rows="4" 
+                                                  maxlength="250" required></textarea>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <div class="mb-3">
+                                                <label for="editTicketStatus" class="form-label">Estado *</label>
+                                                <select class="form-select" id="editTicketStatus" required>
+                                                    <option value="NEW">Nuevo</option>
+                                                    <option value="OPEN">Abierto</option>
+                                                    <option value="IN_PROGRESS">En Progreso</option>
+                                                    <option value="RESOLVED">Resuelto</option>
+                                                    <option value="CLOSED">Cerrado</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="mb-3">
+                                                <label for="editTicketPriority" class="form-label">Prioridad *</label>
+                                                <select class="form-select" id="editTicketPriority" required>
+                                                    <option value="LOW">Baja</option>
+                                                    <option value="MEDIUM">Media</option>
+                                                    <option value="HIGH">Alta</option>
+                                                    <option value="CRITICAL">Crítica</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="mb-3">
+                                                <label for="editTicketType" class="form-label">Tipo *</label>
+                                                <select class="form-select" id="editTicketType" required>
+                                                    <option value="INCIDENT">Incidente</option>
+                                                    <option value="SERVICE_REQUEST">Solicitud de Servicio</option>
+                                                    <option value="QUESTION">Pregunta</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="editTicketAssignedToId" class="form-label">Asignado a (ID)</label>
+                                        <input type="text" class="form-control" id="editTicketAssignedToId">
+                                    </div>
+                                    <div class="d-flex gap-2">
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="bi bi-check-circle me-1"></i>Actualizar Ticket
+                                        </button>
+                                        <button type="button" class="btn btn-secondary" onclick="showTicketDetails()">
+                                            <i class="bi bi-arrow-left me-1"></i>Cancelar
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="toast-container position-fixed bottom-0 end-0 p-3">
+        <div id="toast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header">
+                <i class="bi bi-info-circle-fill text-primary me-2"></i>
+                <strong class="me-auto">Notificación</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+            </div>
+            <div class="toast-body" id="toastBody">
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios@1.6.0/dist/axios.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
